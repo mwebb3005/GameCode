@@ -1,0 +1,6 @@
+1. Coin/Item Collection
+2. Item Spawning
+3. Wildlife spawning - scared away if in certain small proximity to farmer, OR are dangerous to farmer
+4. Upgrades at end of day (Sprinkler for faster spawning, more crop health, greater scare proximity, scarecrow, 
+more money per harvest, different crops)
+5. 
