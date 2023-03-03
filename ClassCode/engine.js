@@ -25,54 +25,10 @@ class Scene {
     }
 }
 
-class Component{
-    name = ""
-    parent
-    started = false
-
-    //animal.name = "Fido"  if name is public
-    //animal.setName("Fido") coorect Java encapsulation
-    //animal.name = "Fido" using properties
-    get transform(){
-        return this.parent.components[0]
-    }
-    //no "set transform(newTransform)" makes property effectively read-only
-}
-
-class Transform extends Component{
-    name = "Transform"
-    x = 0
-    y = 0
-    sx = 1
-    sy = 1
-    r = 0
-}
-
-class Circle extends Component{
-    name = "Circle"
-    fillStyle = "white"
-    draw(ctx) {
-        ctx.fillStyle = this.fillStyle
-
-        ctx.beginPath()
-        ctx.arc(this.transform.x, this.transform.y, this.transform.sx, 0, Math.PI * 2)
-        ctx.fill()
-    }
-}
-
 class GameObject{
     name = ""
     components = []
     started = false
-    constructor(name){
-        this.name = name;
-        this.addComponent(new Transform());
-    }
-
-    get transform(){
-        return this.components[0]
-    }
-
     addComponent(component){
         this.components.push(component);
         component.parent = this;
@@ -86,7 +42,11 @@ class GameObject{
     }
 }
 
-
+class Component{
+    name = ""
+    parent
+    started = false
+}
 
 let canvas = document.querySelector("#canv")
 let ctx = canvas.getContext("2d");
@@ -153,7 +113,6 @@ function engineUpdate() {
     if (pause) return
     let scene = SceneManager.getActiveScene()
     if (SceneManager.changedSceneFlag && scene.start) {
-        scene.gameObjects = []
         scene.start()
         SceneManager.changedSceneFlag = false
     }
