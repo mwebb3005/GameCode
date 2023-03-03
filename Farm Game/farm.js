@@ -137,12 +137,12 @@ class MainDrawGameObject extends GameObject {
 }
 
 
-class MainScene extends Scene {
-    start() {
-        this.addGameObject(new MainControllerGameObject())
-        this.addGameObject(new MainDrawGameObject())
-    }
-}
+// class MainScene extends Scene {
+//     start() {
+//         this.addGameObject(new MainControllerGameObject())
+//         this.addGameObject(new MainDrawGameObject())
+//     }
+// }
 
 //SceneManager.addScene(MainScene)
 
@@ -339,7 +339,7 @@ class MainScene extends Scene {
         
         
         let playerGameObject = new  GameObject("PlayerGameObject")
-        ballGameObject.addComponent(new PlayerComponent())
+        playerGameObject.addComponent(new PlayerComponent())
         this.addGameObject(playerGameObject)
         
         
