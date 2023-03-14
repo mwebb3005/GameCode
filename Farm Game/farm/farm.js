@@ -1,3 +1,6 @@
+import "../engine/engine.js"
+
+/*
 let margin = 20;
 let size = 100;
 let time = 0
@@ -14,11 +17,21 @@ let player;
 let rightFace = true;
 let handsFull = false
 
+let movementTimer = 0
+let bunnyVX = 0
+let bunnyVY = 0
+let moveRabbit = false
+
 let coins = 0;
 let cropX = []
 let cropY = []
 
 let points = 0;
+
+//For Arrow
+let wOffset = canvas.width / 3
+let hOffset = canvas.height / 12
+*/
 
 //-----------------------------------------------------
 //Start
@@ -89,24 +102,10 @@ class StartScene extends Scene {
 
 
 
+
+
 //Main (Attempts)-----------------------------------------------------------------
 
-class MainController extends Component {
-    start() {
-        this.timer = 100
-    }
-    update() {
-        time++
-        //Need to increase to match an actual second 
-        if (time > 1) {
-            timer--;
-            time = 0;
-        }
-        if (timer < 0) {
-            SceneManager.changeScene(2)
-        }
-    }
-}
 
 class MainDrawComponent extends Component {
     draw(ctx) {
@@ -123,18 +122,75 @@ class MainDrawComponent extends Component {
     }
 }
 
+/*
 class MainControllerGameObject extends GameObject {
     start() {
         this.addComponent(new MainController())
     }
 }
+*/
 
+/*
 class MainDrawGameObject extends GameObject {
     start() {
         this.addComponent(new MainDrawComponent());
     }
 
 }
+*/
+
+class CoinsComponent extends Component {
+    name = "CoinsComponent"
+    start() {
+        this.coins = 0
+        //this.time = 0
+    }
+    update() {
+
+    }
+    handleMessage(message) {
+        if (message.message = "AppleDeposit") {
+            this.coins++
+        }
+    }
+    draw(ctx) {
+
+        //Grass
+        ctx.fillStyle = "rgb(50,200,25)"
+        ctx.fillRect(0, 0, canvas.width, canvas.height)
+        //Sky
+        ctx.fillStyle = "rgb(50,240,250)"
+        ctx.fillRect(0, 0, canvas.width, canvas.height / 8)
+        //Timer
+        ctx.fillStyle = "white";
+        ctx.font = "20px arial"
+        ctx.fillText(timer, 50, 50);
+
+
+        ctx.fillStyle = "white"
+        ctx.fillText(this.coins, this.transform.x, this.transform.y);
+    }
+}
+
+/*
+class MainControllerComponent extends Component {
+    start() {
+
+    }
+    update() {
+
+
+    }
+    handleMessage(message) {
+        if (message.message == "ApplePickup") {
+            let appleGameObjects = GameObject.getObjectsByName("AppleGameObject")
+            appleGameObjects = appleGameObjects.filter(go => !go.markForDestroy)
+            
+            
+        }
+    }
+}
+*/
 
 
 // class MainScene extends Scene {
@@ -147,78 +203,142 @@ class MainDrawGameObject extends GameObject {
 //SceneManager.addScene(MainScene)
 
 
-class PointsComponent extends Component {
-    name = "PointComponent"
+class MainScene extends Scene {
     start() {
-        this.points = 0
+        let coinsGameObject = new GameObject("coinsGameObject")
+        coinsGameObject.addComponent(new PointsComponent())
+        coinsGameObject.transform.x = canvas.width - canvas.width/25
+        coinsGameObject.transform.y = canvas.height/25
+        this.addGameObject(coinssGameObject)
+
+        /*let RabbitGameObject = new GameObject("RabbitGameObject")
+        rabbitGameObject.addComponent(new RabbitComponent()) */
+
+        let playerGameObject = new GameObject("PlayerGameObject")
+        playerGameObject.addComponent(new PlayerComponent())
+        this.addGameObject(playerGameObject)
+
+
+
+        this.addGameObject(new GameObject("RabbitGameObject").addComponent(new RabbitComponent()))
+        this.addGameObject(new GameObject("BoxGameObject").addComponent(new BoxComponent()))
+        this.addGameObject(new GameObject("AppleGameObject").addComponent(new AppleComponent()))
+        this.addGameObject(new GameObject("CoinCounterGameObject").addComponent(new CoinCounterComponent()))
+
+    }
+}
+
+
+class TimerComponent extends Component {
+    name = "TimerComponent"
+    start() {
+        this.timer = 100
+        this.transform.x = 20
+        this.transform.y = 20
+
     }
     update() {
-
+        time++
+        //Need to increase to match an actual second 
+        if (time > 1) {
+            timer--;
+            time = 0;
+        }
+        if (timer < 0) {
+            SceneManager.changeScene(2)
+        }
     }
     draw(ctx) {
         //View part of MVC
+        //Sky
+        ctx.fillStyle = "rgb(50,240,250)"
+        ctx.fillRect(0, 0, canvas.width, canvas.height / 8)
+
+        //Background
         ctx.fillStyle = "green"
-        ctx.fillRect(0, 0, canvas.width, canvas.height)
+        ctx.fillRect(0, canvas.height / 8, canvas.width, canvas.height)
 
         ctx.fillStyle = "white"
-        ctx.fillText(this.points, this.transform.x, this.transform.y);
-        //ctx.fillText(points, 0, 10);
+        ctx.font = "20px arial"
+        ctx.fillText(timer, 50, 50);
     }
 }
 
 class PlayerComponent extends Component {
     name = "PlayerComponent"
     start() {
+        this.width = canvas.width;
+        this.height = canvas.height
+        this.rightFace = true;
+        this.playerWidth = 40
+        this.playerHeight = 80
+        this.transform.x = canvas.width/2
+        this.transform.y = canvas.height/2
+        this.time = 0
+        this.timer = 100
+        this.handsFull = false
+
+        /*
+        let up = true
+        let arrow = 0
+        let inpOffset
+
+        let playerX = 0
+        let playerY = 0
         
+        let player;
+        
+        let handsFull = false
+        */
     }
     update() {
         if (keysDown["ArrowLeft"]) {
-            playerX -= 8;
+            this.transform.x -= 8
             rightFace = false
         }
         else if (keysDown["ArrowRight"]) {
-            playerX += 8
+            this.transform.x += 8
             rightFace = true
         }
         if (keysDown["ArrowUp"]) {
-            playerY -= 8;
+            this.transform.y -= 8;
         }
         else if (keysDown["ArrowDown"]) {
-            playerY += 8
+            this.transform.y += 8
         }
 
         //Constrain the player position to screen
-        if (playerX < -canvas.width / 2) {
-            playerX = -canvas.width / 2
+        if (this.transform.x < -canvas.width / 2) {
+            this.transform.x = -canvas.width / 2
         }
-        if (playerX > canvas.width / 2 - playerWidth) {
-            playerX = canvas.width / 2 - playerWidth;
+        if (this.transform.x > canvas.width / 2 - this.transform.x) {
+            this.transform.x = canvas.width / 2 - this.transform.x;
         }
-        if (playerY < -canvas.height / 2 + playerWidth) {
-            playerY = -canvas.height / 2 + playerWidth
+        if (this.transform.y < -canvas.height / 2 + this.transform.y) {
+            this.transform.y = -canvas.height / 2 + this.transform.y
         }
-        if (playerY > canvas.height / 2 - playerHeight) {
-            playerY = canvas.height / 2 - playerHeight;
+        if (this.transform.y > canvas.height / 2 - this.transform.y) {
+            this.transform.y = canvas.height / 2 - this.transform.y;
         }
     }
     draw(ctx) {
         //Body
         ctx.beginPath();
-        ctx.rect((canvas.width / 2) + playerX, (canvas.height / 2) + playerY, playerWidth, playerHeight);
+        ctx.rect((canvas.width / 2) + this.transform.x, (canvas.height / 2) + this.transform.y, playerWidth, playerHeight);
         ctx.fillStyle = "rgb(255, 245, 190)";
         if (rightFace) {
-            ctx.rect((canvas.width / 2) + playerX, (canvas.height / 2) + playerY + 15, 45, 5);
+            ctx.rect((canvas.width / 2) + this.transform.x, (canvas.height / 2) + this.transform.y + 15, 45, 5);
         }
         else {
-            ctx.rect((canvas.width / 2) + playerX, (canvas.height / 2) + playerY + 15, -5, 5);
+            ctx.rect((canvas.width / 2) + this.transform.x, (canvas.height / 2) + this.transform.y + 15, -5, 5);
         }
         ctx.fill();
         ctx.closePath();
         //Hat
         ctx.beginPath();
-        ctx.rect((canvas.width / 2) + playerX - 5, (canvas.height / 2) + playerY, 50, 10);
+        ctx.rect((canvas.width / 2) + this.transform.x - 5, (canvas.height / 2) + this.transform.y, 50, 10);
         ctx.fillStyle = "rgb(138, 115, 10)";
-        ctx.rect((canvas.width / 2) + playerX + 5, (canvas.height / 2) + playerY, 30, -20);
+        ctx.rect((canvas.width / 2) + this.transform.x + 5, (canvas.height / 2) + this.transform.y, 30, -20);
         ctx.fill();
         ctx.closePath();
     }
@@ -227,7 +347,8 @@ class PlayerComponent extends Component {
 class AppleComponent extends Component {
     name = "AppleComponent"
     start() {
-
+        this.transform.x = canvas.width/(Math.random * 2)
+        this.transform.y = canvas.height/(Math.random * 3)
     }
     update() {
 
@@ -249,24 +370,82 @@ class AppleComponent extends Component {
 class RabbitComponent extends Component {
     name = "RabbitComponent"
     start() {
-
+        this.movementTimer = 0
+        this.bunnyVX = 0
+        this.bunnyVY = 0
+        moveRabbit = true
+        this.transform.x = canvas.width / 3
+        this.transform.y = canvas.height / 3
     }
     update() {
+        //Pseudo Logic: Random movement every 100 time, if in certain range of Apple Array, move towards apple
+        if (moveRabbit) {
+            movementTimer++;
+            if (movementTimer > 1)
+                moveRabbit = false
+        }
+        else {
+            movementTimer--
+            if (movementTimer == 0) {
+                moveRabbit = true
+            }
+        }
+
+
+        if (moveRabbit) {
+            let newDirection = -1 + Math.floor((Math.random()) * 4)
+
+            if (newDirection > 1) {
+                bunnyVX = -1 * (Math.floor(Math.random) * 10)
+                bunnyVY = -1 * (Math.floor(Math.random) * 10)
+            }
+            if (newDirection < 2 && newDirection > 0) {
+                bunnyVX = (Math.floor(Math.random) * 10)
+                bunnyVY = -1 * (Math.floor(Math.random) * 10)
+            }
+            if (newDirection == 0) {
+                bunnyVX = -1 * (Math.floor(Math.random) * 10)
+                bunnyVY = (Math.floor(Math.random) * 10)
+            }
+            if (newDirection < 0) {
+                bunnyVX = (Math.floor(Math.random) * 10)
+                bunnyVY = (Math.floor(Math.random) * 10)
+            }
+        }
+
+
+        this.transform.x += bunnyVX
+        this.transform.y += bunnyVY
+
+        //Keep bunny within boundaries of map
+        if (this.transform.x < 0) {
+            bunnyVX *= -1
+        }
+        if (this.transform.y < 0) {
+            bunnyVY *= -1
+        }
+        if (this.transform.x > canvas.width) {
+            bunnyVX *= -1
+        }
+        if (this.transform.y > canvas.height) {
+            bunnyVY *= -1
+        }
+
 
     }
     draw(ctx) {
         ctx.beginPath();
-        ctx.rect(canvas.width / 4, canvas.height / 4, 50, 25);
+        ctx.rect((canvas.width / 4) + this.transform.x, (canvas.height / 4) + this.transform.y, 50, 25);
         ctx.fillStyle = "rgb(255, 255, 255)";
         ctx.fill();
         ctx.closePath();
         ctx.beginPath();
-        ctx.rect(canvas.width / 4 + canvas.width / 50, canvas.height / 4 - canvas.height / 70, 10, 15)
+        ctx.rect((canvas.width / 4 + canvas.width / 50) + this.transform.x, (canvas.height / 4 - canvas.height / 70) + this.transform.y, 10, 15)
         ctx.fillStyle = "white ";
         ctx.fill();
         ctx.closePath();
         ctx.beginPath();
-        ctx.arc(canvas.width / 4 + 50, canvas.height / 4 + 5, 5, 0, 2 * Math.PI)
+        ctx.arc((canvas.width / 4 + 50) + this.transform.x, (canvas.height / 4 + 5) + this.transform.y, 5, 0, 2 * Math.PI)
         ctx.fillStyle = "pink ";
         ctx.fill();
         ctx.closePath();
@@ -329,26 +508,28 @@ class CoinCounterComponent extends Component {
     }
 }
 
+/*
 class MainScene extends Scene {
     start() {
-        let pointsGameObject = new GameObject("PointsGameObject")
-        pointsGameObject.addComponent(new PointsComponent())
-        pointsGameObject.transform.x = 0
-        pointsGameObject.transform.y = 10
-        this.addGameObject(pointsGameObject)
-        
-        
-        let playerGameObject = new  GameObject("PlayerGameObject")
+        let timerGameObject = new GameObject("TimerGameObject")
+        timerGameObject.addComponent(new TimerComponent())
+        timerGameObject.transform.x = 0
+        timerGameObject.transform.y = 10
+        this.addGameObject(timerGameObject)
+
+
+        let playerGameObject = new GameObject("PlayerGameObject")
         playerGameObject.addComponent(new PlayerComponent())
         this.addGameObject(playerGameObject)
-        
-        
+
+
         this.addGameObject(new GameObject("RabbitGameObject").addComponent(new RabbitComponent()))
         this.addGameObject(new GameObject("BoxGameObject").addComponent(new BoxComponent()))
         this.addGameObject(new GameObject("AppleGameObject").addComponent(new AppleComponent()))
         this.addGameObject(new GameObject("CoinCounterGameObject").addComponent(new CoinCounterComponent()))
     }
 }
+*/
 
 
 //End Scene----------------------------------------------------------------------------
@@ -427,8 +608,8 @@ class ArrowComponent extends Component {
     }
     draw(ctx) {
         //Arrow
-        let wOffset = canvas.width / 5 + canvas.width / 25
-        let hOffset = canvas.height / 12
+        wOffset = canvas.width / 5 + canvas.width / 24
+        hOffset = canvas.height / 12
         inpOffset = arrow
 
         ctx.beginPath();
@@ -466,19 +647,19 @@ class EndTextComponent extends Component {
         //Text
         ctx.fillStyle = "white";
         ctx.font = "50px arial"
-        ctx.fillText("Item1", canvas.width / 2 + 30 - wOffset, canvas.height / 2 - 5 - hOffset);
+        ctx.fillText("Item1", canvas.width / 2 + 55 - wOffset, canvas.height / 2 + 25 - hOffset);
         //Text
         ctx.fillStyle = "white";
         ctx.font = "50px arial"
-        ctx.fillText("Item2", canvas.width / 2 + 30 - wOffset, canvas.height / 2 - 5 - hOffset + 100);
+        ctx.fillText("Item2", canvas.width / 2 + 55 - wOffset, canvas.height / 2 + 25 - hOffset + 100);
         //Text
         ctx.fillStyle = "white";
         ctx.font = "50px arial"
-        ctx.fillText("Item1", canvas.width / 2 + 30 - wOffset, canvas.height / 2 - 5 - hOffset + 200);
+        ctx.fillText("Item3", canvas.width / 2 + 55 - wOffset, canvas.height / 2 + 25 - hOffset + 200);
         //Text
         ctx.fillStyle = "white";
         ctx.font = "50px arial"
-        ctx.fillText("Start Day", canvas.width / 2 + 30 - wOffset, canvas.height / 2 - 5 - hOffset + 300);
+        ctx.fillText("Start Day", canvas.width / 2 + 55 - wOffset, canvas.height / 2 + 25 - hOffset + 300);
     }
 }
 
@@ -497,9 +678,7 @@ let startScene = new StartScene()
 let mainScene = new MainScene()
 let endScene = new EndScene()
 
-SceneManager.addScene(startScene)
-SceneManager.addScene(mainScene)
-SceneManager.addScene(endScene)
+window.allScenes = [startScene, mainScene, endScene]
 
 
 //Previous Code

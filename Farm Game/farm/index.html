@@ -1,0 +1,18 @@
+<!-- The main file for playing the pong game. -->
+<!DOCTYPE html>
+<html>
+
+<head>
+    <link href="/engine/engine.css">
+</head>
+
+<body>
+    <canvas id="canv"></canvas>
+    <script type="module">
+        import "../engine/engine.js"
+        import "../farm/farm.js"
+        SceneManager.startScenes(allScenes, "Farm")
+    </script>
+</body>
+
+</html>
