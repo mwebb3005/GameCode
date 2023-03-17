@@ -23,6 +23,8 @@ document.getElementsByTagName("head")[0].appendChild(link); // for IE6
 //the 2d context
 let canvas = document.querySelector("#canv")
 let ctx = canvas.getContext("2d");
+//Below added by me:
+
 
 //Store the state of the user input
 //This will be in its own file eventually
@@ -54,7 +56,7 @@ function mouseMove(e) {
 //Key up event handlers
 function keyUp(e) {
     keysDown[e.key] = false
-    
+
     //Pause functionality
     if (e.key == "p") {
         pause = !pause
@@ -68,7 +70,7 @@ function keyUp(e) {
 //If the user hold the key down ("repated keys")
 function keyDown(e) {
     keysDown[e.key] = true
-    
+
     //To prevent scrolling (if needed)
     //This has to be in keyDown, not keyup
     if (e.key == " ") {
@@ -114,7 +116,7 @@ function engineUpdate() {
         }
     }
 
-    
+
     //Call update on all components with an update function
     for (let gameObject of scene.gameObjects) {
         for (let component of gameObject.components) {
@@ -127,7 +129,7 @@ function engineUpdate() {
     for (let gameObject of scene.gameObjects) {
         for (let component of gameObject.components) {
             if (component.update) {
-                for(let message of GameObject.messsages){
+                for (let message of GameObject.messsages) {
                     component.handleMessage(message)
                 }
             }
@@ -137,19 +139,19 @@ function engineUpdate() {
 
 
 
-}
 
-//Handle Destroy
-//Note to self: want to destroy game objects NOT components
-let toKeep = []
-for (let gameObject of scene.gameObjects) {
-    if(!gameObject.markForDesroy){
-        toKeep.push(gameObject)
+
+    //Handle Destroy
+    //Note to self: want to destroy game objects NOT components
+    let toKeep = []
+    for (let gameObject of scene.gameObjects) {
+        if (!gameObject.markForDesroy) {
+            toKeep.push(gameObject)
+        }
+
     }
-
+    scene.gameObject = toKeep
 }
-scene.gameObject = toKeep
-
 //Draw all the objects in the scene
 function engineDraw() {
 
@@ -208,13 +210,13 @@ function test(title, options = {}) {
         //Set maxFrames to either the parameter passed in
         //or the default value otherwise.
         let maxFrames = options.maxFrames ? options.maxFrames : 100;
-        
+
         //Emulate the game loop by running for a set number of iterations
         for (let i = 0; i < maxFrames; i++) {
             engineUpdate();
             engineDraw();
         }
-        
+
         //Call the done function if provided
         if (options.done) {
             options.done(ctx);
