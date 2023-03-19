@@ -114,38 +114,7 @@ class MainDrawGameObject extends GameObject {
 }
 */
 
-class CoinsComponent extends Component {
-    name = "CoinsComponent"
-    start() {
-        this.coins = 0
-        //this.time = 0
-    }
-    update() {
 
-    }
-    handleMessage(message) {
-        if (message.message = "AppleDeposit") {
-            this.coins++
-        }
-    }
-    draw(ctx) {
-
-        //Grass
-        ctx.fillStyle = "rgb(50,200,25)"
-        ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height)
-        //Sky
-        ctx.fillStyle = "rgb(50,240,250)"
-        ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height / 8)
-        //Timer
-        ctx.fillStyle = "white";
-        ctx.font = "20px arial"
-        ctx.fillText(timer, 50, 50);
-
-
-        ctx.fillStyle = "white"
-        ctx.fillText(this.coins, this.transform.x, this.transform.y);
-    }
-}
 
 /*
 class MainControllerComponent extends Component {
@@ -193,6 +162,7 @@ class MainScene extends Scene {
 
 
 
+        this.addGameObject(new GameObject("TimerGameObject").addComponent(new TimerComponent()))
         this.addGameObject(new GameObject("RabbitGameObject").addComponent(new RabbitComponent()))
         this.addGameObject(new GameObject("BoxGameObject").addComponent(new BoxComponent()))
         this.addGameObject(new GameObject("AppleGameObject").addComponent(new AppleComponent()))
@@ -222,7 +192,6 @@ class TimerComponent extends Component {
         }
     }
     draw(ctx) {
-        //View part of MVC
         //Sky
         ctx.fillStyle = "rgb(50,240,250)"
         ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height / 8)
@@ -231,6 +200,7 @@ class TimerComponent extends Component {
         ctx.fillStyle = "green"
         ctx.fillRect(0, ctx.canvas.height / 8, ctx.canvas.width, ctx.canvas.height)
 
+        //Timer
         ctx.fillStyle = "white"
         ctx.font = "20px arial"
         ctx.fillText(timer, 50, 50);
@@ -239,7 +209,7 @@ class TimerComponent extends Component {
 
 class PlayerComponent extends Component {
     name = "PlayerComponent"
-    start(ctx) {
+    start() {
         this.width = 0
         this.height = 0
         this.rightFace = true;
@@ -431,7 +401,16 @@ class BoxComponent extends Component {
 
     }
     update() {
-
+        let playerX = PlayerComponent.transform.x
+        let playerY = PlayerComponent.transform.y
+        let handsFull = PlayerComponent.handsFull
+        
+        if((playerY >= ctx.canvas.height - ctx.canvas.height) && 
+        ((playerX >= ctx.canvas.width/3) && playerX <= (ctx.canvas.width - ctx.canvas.width/3))){
+            if(handsFull){
+                GameObject.handleMessage(this, "AppleDeposit")
+            }
+        }
     }
     draw(ctx) {
         ctx.beginPath();
@@ -452,10 +431,15 @@ class BoxComponent extends Component {
 class CoinCounterComponent extends Component {
     name = "CoinCounterComponent"
     start() {
-
+        this.coins = 0
     }
     update() {
 
+    }
+    handleMessage(message) {
+        if (message.message = "AppleDeposit") {
+            this.coins++
+        }
     }
     draw(ctx) {
         //Coin Icon
@@ -480,6 +464,7 @@ class CoinCounterComponent extends Component {
         ctx.fillText(coins, ctx.canvas.width - (ctx.canvas.width / 20), ctx.canvas.height / 13);
     }
 }
+
 
 /*
 class MainScene extends Scene {
