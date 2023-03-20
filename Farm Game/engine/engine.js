@@ -92,7 +92,7 @@ function engineUpdate() {
     let scene = SceneManager.getActiveScene()
     if (SceneManager.changedSceneFlag && scene.start) {
         scene.gameObjects = []
-        scene.start()
+        scene.start(ctx)
         SceneManager.changedSceneFlag = false
     }
 
@@ -110,7 +110,7 @@ function engineUpdate() {
     for (let gameObject of scene.gameObjects) {
         for (let component of gameObject.components) {
             if (component.start && !component.started) {
-                component.start()
+                component.start()   //Pass ctx as parameter here?
                 component.started = true
             }
         }
@@ -121,7 +121,7 @@ function engineUpdate() {
     for (let gameObject of scene.gameObjects) {
         for (let component of gameObject.components) {
             if (component.update) {
-                component.update()
+                component.update()  //Pass ctx as parameter here?
             }
         }
     }

@@ -40,16 +40,28 @@ class StartController extends Component {
         ctx.fillStyle = `rgba(255, 255, 255, ${this.time % 40 - 10})`
         ctx.font = "50px arial"
         ctx.fillText("Press Space to Start", ctx.canvas.width / 3, 3 * (ctx.canvas.height / 4));
+        
     }
 }
 
 
 //Current issue: can't transfer code to DrawComponent or things break
+//Doesn't use Time reference from StartController in intended way 
 
 class StartDrawComponent extends Component {
     draw(ctx) {
-        
-        
+        /*
+        ctx.fillStyle = "rgb(30,200,25)"
+        ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height)
+        ctx.fillStyle = `rgb(${StartController.time / 2},${StartController.time + 40},${StartController.time + 70})`
+        ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height / 8)
+        ctx.fillStyle = "white";
+        ctx.font = "50px arial"
+        ctx.fillText("Untitled Farm Game", ctx.canvas.width / 3, ctx.canvas.height / 2);
+        ctx.fillStyle = `rgba(255, 255, 255, ${StartController.time % 40 - 10})`
+        ctx.font = "50px arial"
+        ctx.fillText("Press Space to Start", ctx.canvas.width / 3, 3 * (ctx.canvas.height / 4));
+        */
     }
 }
 
@@ -154,10 +166,12 @@ class MainScene extends Scene {
 
         let playerGameObject = new GameObject("PlayerGameObject")
         playerGameObject.addComponent(new PlayerComponent())
+        
         PlayerComponent.width = ctx.canvas.width
         PlayerComponent.height = ctx.canvas.height
-        PlayerComponent.transform.x = ctx.canvas.width/2
-        PlayerComponent.transform.y = ctx.canvas.height/2
+        PlayerComponent.transform.x = ((ctx.canvas.width))/2
+        PlayerComponent.transform.y = (ctx.canvas.height)/2
+        
         this.addGameObject(playerGameObject)
 
 
@@ -292,9 +306,15 @@ class AppleComponent extends Component {
     start() {
         this.transform.x = ctx.canvas.width/(Math.random * 2)
         this.transform.y = ctx.canvas.height/(Math.random * 3)
+        this.touched = false
     }
     update() {
-
+        //Mark to destroy if touched 
+        //Pseudocode, need to decide on logic for touched 
+        if (this.touched){
+            this.parent.destroy()
+            GameObject.handleMessage(this, "AppleTouched")
+        }
     }
     draw(ctx) {
         ctx.beginPath();
