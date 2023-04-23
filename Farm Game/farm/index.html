@@ -1,9 +1,9 @@
-<!-- The main file for playing the pong game. -->
+<!-- The main file for playing the farm game. -->
 <!DOCTYPE html>
 <html>
 
 <head>
-    <link href="/engine/engine.css">
+    <link href="/engine/engine.css" rel="stylesheet">
 </head>
 
 <body>
@@ -12,6 +12,7 @@
         import "../engine/engine.js"
         import "../farm/farm.js"
         SceneManager.startScenes(allScenes, "Farm")
+        start("Farm", {aspectRatio:(16/9),logicalWidth:3000,letterboxColor:"gray"})
     </script>
 </body>
 

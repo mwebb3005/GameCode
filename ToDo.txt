@@ -4,3 +4,8 @@
 4. Upgrades at end of day (Sprinkler for faster spawning, more crop health, greater scare proximity, scarecrow, 
 more money per harvest, different crops)
 5. 
+
+
+Notes: Need to distinguish GameObjects vs components
+
+How to persist info accross scenes: In html make cookie, good for high scores

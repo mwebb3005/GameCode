@@ -2,7 +2,7 @@
 CSS used by every game.
 This removes any margin and scroll bars
  */
-body {
+ body {
     margin: 0;
     overflow: hidden;
 }

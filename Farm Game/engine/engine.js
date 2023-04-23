@@ -1,19 +1,37 @@
-import "../engine/SceneManager.js"
-import "../engine/Component.js"
-import "../engine/Scene.js"
-import "../engine/GameObject.js"
-import "../engine/Transform.js"
-import "../engine/Circle.js"
+import "./SceneManager.js"
+import "./Component.js"
+import "./Scene.js"
+import "./GameObject.js"
+import "./Transform.js"
+import "./Circle.js"
+import "./Camera.js"
+import "./Rectangle.js"
+import "./GUIRectangle.js"
+import "./Line.js"
+import "./Text.js"
+import "./Vector2.js"
+import "./Time.js"
+import "./Input.js"
+
+class EngineGlobals{
+    static requestedAspectRatio = 16/9;
+    static logicalWidth = 1;
+}
+
+window.EngineGlobals = EngineGlobals;
 
 //True if the gamee is paused, false otherwise
 let pause = false
+
+
+//Add an aspect ratio
+//Add logical coordinates
 
 //Handle favicon
 const link = document.createElement("link");
 link.href = "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2016%2016'%3E%3Ctext%20x='0'%20y='14'%3E🎮%3C/text%3E%3C/svg%3E";
 link.rel = "icon";
 document.getElementsByTagName("head")[0].appendChild(link); // for IE6
-
 
 //-----------------------------------------------------------
 //Input Event handling
@@ -23,8 +41,6 @@ document.getElementsByTagName("head")[0].appendChild(link); // for IE6
 //the 2d context
 let canvas = document.querySelector("#canv")
 let ctx = canvas.getContext("2d");
-//Below added by me:
-
 
 //Store the state of the user input
 //This will be in its own file eventually
@@ -61,7 +77,6 @@ function keyUp(e) {
     if (e.key == "p") {
         pause = !pause
     }
-
 }
 
 //Key down event handlers.
@@ -82,16 +97,52 @@ function keyDown(e) {
 //Game Loop
 //-----------------------------------------------------------
 
+/**
+ * The engine's game loop.
+ * This should never be called by game code.
+ * Internally, this is called every Time.deltaTime seconds.
+ * 
+ * The game loop updates the game and then draws the game
+ */
+function gameLoop() {
+    update()
+    draw()
+}
 
-//Update the engine
-function engineUpdate() {
+/** 
+ * The update part of the game loop.
+ * 
+ * This function should never by called by game code.
+ */
+function update() {
+    //Match the size of the canvas to the browser's size
+    //This allows us to respond to browser size changes
+    canvas.width = window.innerWidth
+    canvas.height = window.innerHeight
+
     //Handle the case when there is a system level pause.
     if (pause) return
+
+    Time.update();
 
     //Get a reference to the active scene.
     let scene = SceneManager.getActiveScene()
     if (SceneManager.changedSceneFlag && scene.start) {
+        let camera = scene.gameObjects[0]
         scene.gameObjects = []
+        scene.gameObjects.push(camera)
+
+        //Loop through the objects from the previous scene
+        //so can preserve some
+        let previousScene = SceneManager.getPreviousScene()
+        if (previousScene) {
+            for (let gameObject of previousScene.gameObjects) {
+                if (gameObject.markedDoNotDestroyOnLoad) {
+                    scene.gameObjects.push(gameObject)
+                }
+            }
+        }
+
         scene.start(ctx)
         SceneManager.changedSceneFlag = false
     }
@@ -100,7 +151,7 @@ function engineUpdate() {
     //but have not.
     for (let gameObject of scene.gameObjects) {
         if (gameObject.start && !gameObject.started) {
-            gameObject.start()
+            gameObject.start(ctx)
             gameObject.started = true
         }
     }
@@ -110,176 +161,194 @@ function engineUpdate() {
     for (let gameObject of scene.gameObjects) {
         for (let component of gameObject.components) {
             if (component.start && !component.started) {
-                component.start()   //Pass ctx as parameter here?
+                component.start(ctx)
                 component.started = true
             }
         }
     }
 
+    //Handle destroy here
+    let keptGameObjects = []
+    for (let gameObject of scene.gameObjects) {
+        if (!gameObject.markedForDestroy) {
+            keptGameObjects.push(gameObject)
+        }
+    }
+    scene.gameObjects = keptGameObjects;
 
     //Call update on all components with an update function
     for (let gameObject of scene.gameObjects) {
         for (let component of gameObject.components) {
             if (component.update) {
-                component.update()  //Pass ctx as parameter here?
+                component.update(ctx)
             }
         }
     }
 
-    for (let gameObject of scene.gameObjects) {
-        for (let component of gameObject.components) {
-            if (component.update) {
-                for (let message of GameObject.messsages) {
-                    component.handleMessage(message)
+
+
+}
+
+let letterboxColor = "gray"
+
+/**
+ * The draw part of the game loop.
+ * 
+ * This should never be called directly from game code.
+ */
+function draw() {
+    //Adjust for the camera
+    ctx.fillStyle = Camera.main.fillStyle;
+    ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+
+
+    let browserAspectRatio = canvas.width / canvas.height;
+    let offsetX = 0;
+    let offsetY = 0;
+    let browserWidth = canvas.width
+    if (EngineGlobals.requestedAspectRatio > browserAspectRatio) {
+        let desiredHeight = canvas.width / EngineGlobals.requestedAspectRatio;
+        let amount = (canvas.height - desiredHeight) / 2;
+        offsetY = amount;
+    }
+    else {
+        let desiredWidth = canvas.height * EngineGlobals.requestedAspectRatio
+        let amount = (canvas.width - desiredWidth) / 2;
+        offsetX = amount
+        browserWidth -= 2 * amount
+    }
+
+
+    let scene = SceneManager.getActiveScene()
+
+    ctx.save();
+    let logicalScaling = browserWidth / EngineGlobals.logicalWidth
+    ctx.translate(ctx.canvas.width / 2, ctx.canvas.height / 2)
+    ctx.scale(logicalScaling, logicalScaling)
+
+    ctx.translate(-Camera.main.transform.x, -Camera.main.transform.y)
+
+
+    //Calculate the min and max layer
+    //Map/Reduce
+    let min = scene.gameObjects.filter(go=>go.components.some(c=>c.draw))
+    .map(go => go.layer)
+    .reduce((previous, current)=>Math.min(previous, current))
+
+    let max = scene.gameObjects.filter(go=>go.components.some(c=>c.draw))
+    .map(go => go.layer)
+    .reduce((previous, current)=>Math.max(previous, current))
+
+    //Loop through the components and draw them.
+    for (let i = min; i <= max; i++) {
+        let gameObjects = scene.gameObjects.filter(go=>go.layer==i)
+
+        for (let gameObject of gameObjects) {
+            for (let component of gameObject.components) {
+                if (component.draw) {
+                    component.draw(ctx)
                 }
             }
         }
     }
-    GameObject.messsages = []
+
+    ctx.restore();
 
 
-
-
-
-    //Handle Destroy
-    //Note to self: want to destroy game objects NOT components
-    let toKeep = []
-    for (let gameObject of scene.gameObjects) {
-        if (!gameObject.markForDesroy) {
-            toKeep.push(gameObject)
-        }
-
+    //Now draw the letterboxes
+    let zeroX = 0;
+    let zeroY = 0;
+    if (EngineGlobals.requestedAspectRatio > browserAspectRatio) {
+        let desiredHeight = canvas.width / EngineGlobals.requestedAspectRatio;
+        let amount = (canvas.height - desiredHeight) / 2;
+        zeroY = amount;
+        ctx.fillStyle = letterboxColor
+        ctx.fillRect(0, 0, canvas.width, amount);
+        ctx.fillRect(0, canvas.height - amount, canvas.width, amount);
     }
-    scene.gameObject = toKeep
+    else {
+        let desiredWidth = canvas.height * EngineGlobals.requestedAspectRatio
+        let amount = (canvas.width - desiredWidth) / 2;
+        zeroX = amount;
+        ctx.fillStyle = letterboxColor
+        ctx.fillRect(0, 0, amount, canvas.height);
+        ctx.fillRect(canvas.width - amount, 0, amount, canvas.height);
+    }
+
+    //Now draw any UI. Note we do this after we draw the letterboxes.
+
+     min = scene.gameObjects.filter(go=>go.components.some(c=>c.drawGUI))
+    .map(go => go.layer)
+    .reduce((previous, current)=>Math.min(previous, current))
+
+     max = scene.gameObjects.filter(go=>go.components.some(c=>c.drawGUI))
+    .map(go => go.layer)
+    .reduce((previous, current)=>Math.max(previous, current))
+
+    //Loop through the components and draw them.
+    ctx.save();
+    ctx.translate(zeroX, zeroY)
+    ctx.scale(logicalScaling, logicalScaling);
+    for (let i = min; i <= max; i++) {
+        let gameObjects = scene.gameObjects.filter(go=>go.layer==i)
+
+        for (let gameObject of gameObjects) {
+            for (let component of gameObject.components) {
+                if (component.drawGUI) {
+                    component.drawGUI(ctx)
+                }
+            }
+        }
+    }
+    ctx.restore();
+
+    
+
+    //Draw debugging information
+    let debug = false;
+    if (debug) {
+        let y = 50;
+        for (let gameObject of scene.gameObjects) {
+            ctx.fillStyle = "white"
+            ctx.font = "20px Courier"
+            let string = gameObject.name + " (" + gameObject.transform.x + "," + gameObject.transform.y + ")"
+            ctx.fillText(string, 50, y);
+            y += 20;
+        }
+    }
 }
-//Draw all the objects in the scene
-function engineDraw() {
+
+/**
+ * Set the browser tab title, parse any settings, and start the game loop.
+ * @param {string} title The title of the browser window
+ * @param {Object} settings The settings for the engine to parse. Defaults to an empty object.
+ * 
+ * The engine accepts the following settings. Any other keys on the settings object are ignored.
+ * - aspectRatio. The aspect ratio requested by the game. Defaults to 16/9
+ * - letterboxColor. The color of the letterboxing bars. To remove letterboxing, use "transparent". Defaults to magenta.
+ * - logicalWidth. The logical width of the game. The engine will scale the drawing area to support this logical width. Defaults to 100.
+ */
+function start(title, settings = {}) {
+
+    //Boot the input event handlers
+    Input.start();
 
     //Match the size of the canvas to the browser's size
     //This allows us to respond to browser size changes
     canvas.width = window.innerWidth
     canvas.height = window.innerHeight
 
-    let scene = SceneManager.getActiveScene()
 
-    //Loop through the components and draw them.
-    for (let gameObject of scene.gameObjects) {
-        for (let component of gameObject.components) {
-            if (component.draw) {
-                component.draw(ctx)
-            }
-        }
-    }
-}
-
-/**
- * Start the game and set the browser tabe title
- * @param {string} title The title of teh browser window
- */
-function start(title) {
     document.title = title
-    function gameLoop() {
-        engineUpdate()
-
-        engineDraw()
-
+    if (settings) {
+        EngineGlobals.requestedAspectRatio = settings.aspectRatio ? settings.aspectRatio : 16 / 9
+        letterboxColor = settings.letterboxColor ? settings.letterboxColor : "magenta"
+        EngineGlobals.logicalWidth = settings.logicalWidth ? settings.logicalWidth : 100
     }
+
 
     //Run the game loop 25 times a second
-    setInterval(gameLoop, 1000 / 25)
-
-}
-
-/**
- * Test the game. 
- * Runs a series of test on the game.
- * @param {string} title The title of the game. See start(title) for more details
- * @param {object} options The options object.
- * 
- * The options are as follows:
- * maxFrames: The number of frames to run in the test.
- * Note that teh default is 100 frames if maxFrames is not defined.
- */
-function test(title, options = {}) {
-    //Surround with a try so that if there is an error,
-    //We can display it in the browser
-    try {
-        //Set the title
-        document.title = title;
-
-        //Set maxFrames to either the parameter passed in
-        //or the default value otherwise.
-        let maxFrames = options.maxFrames ? options.maxFrames : 100;
-
-        //Emulate the game loop by running for a set number of iterations
-        for (let i = 0; i < maxFrames; i++) {
-            engineUpdate();
-            engineDraw();
-        }
-
-        //Call the done function if provided
-        if (options.done) {
-            options.done(ctx);
-        }
-    } catch (exception) {
-        //Update the browser window to show that there is an error.
-        failTest()
-
-        //Rethrow the exception so the user can know what line the error
-        //is on, etc.
-        throw exception;
-    }
-}
-
-//Called when tests fail.
-function failTest() {
-    //Draw a red x if a test failed.
-    ctx.font = "20px Courier"
-    ctx.fillText("❌", 9, 20)
-    console.log("An exception was thrown")
-}
-
-//Set to truthy if we want to see the name of each test that was passed
-//If false, only the final result (passed or failed) is displayed
-//without poluting the console.
-let verboseDebug = true;
-
-//Called when a test is passed
-function passTest(description) {
-    //Output the result to the console 
-    //if verbose debugging is on.
-    if (verboseDebug) {
-        console.log("Passed test: " + description)
-    }
-}
-
-//Called when all tests are passed.
-//Draw a green checkmark in the browser
-//if all tests were passed
-function passTests() {
-    ctx.font = "20px Courier"
-    ctx.fillText("✅", 9, 20)
-    console.log("Called passTests")
-}
-
-/**
- * Simple unit test function.
- * If the first parameter evaluates to true, 
- * the test passes.
- * Otherwise, the test fails.
- * @param {boolean} boolean 
- * @param {string} description 
- */
-function assert(boolean, description = "") {
-    //Handle the failed test case
-    if (!boolean) {
-        failTest(description)
-    }
-    //Handle the passed test case
-    else {
-        if (description)
-            passTest(description)
-    }
+    setInterval(gameLoop, 1000 * Time.deltaTime)
 }
 
 //Add certain functions to the global namespace
@@ -289,16 +358,9 @@ function assert(boolean, description = "") {
 /** Start the game in 'play mode1 */
 window.start = start;
 
-/** Start the test.*/
-window.test = test;
-
-/** A reference to our unit test function */
-window.assert = assert;
-
-/** A reference to the pass tests function. 
- * Called by test code when all tests have passed 
- * */
-window.passTests = passTests
+/** Expose the update calls for the testing routines */
+window.engineUpdate = update;
+window.engineDraw = draw;
 
 /** The state of the keyboard.. */
 window.keysDown = keysDown;

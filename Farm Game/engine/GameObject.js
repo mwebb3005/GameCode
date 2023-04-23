@@ -4,7 +4,7 @@
  * as needed.
  * See https://docs.unity3d.com/ScriptReference/GameObject.html
  */
-class GameObject{
+class GameObject {
     /** The name of the game object */
     name = ""
     /** The list of components in the game object */
@@ -12,30 +12,40 @@ class GameObject{
     /** Whether the game object has been started. */
     started = false
 
-    markForDestroy = false
+    /**Whether the game object has had destroy called on it */
+    markedForDestroy = false;
 
-    static messsages = []
+    /** Whether the game object should be preserved when the scene changes. */
+    markedDoNotDestroyOnLoad = false
+
+    layer = 0
 
     /**
      * The constructor. This assigns a name and creates and adds
      * a transform component.
      * @param {string} name The name of the new game object.
      */
-    constructor(name){
+    constructor(name) {
         this.name = name;
         this.addComponent(new Transform());
     }
 
-    destroy(){
-        this.markForDestroy = true
-    }
+    /**
+     * Flag a game object as persistent across scene loads
+     */
+    //To Add
 
     /** 
      * A property to get the trasform on this game object.
      * See https://docs.unity3d.com/ScriptReference/GameObject-transform.html
      * */
-    get transform(){
+    get transform() {
         return this.components[0]
+    }
+    set transform(t){
+        if(!t instanceof Transform)
+            throw "Tried to set transform to a non-transform reference."
+        this.components[0] = t;
     }
 
     /**
@@ -45,7 +55,7 @@ class GameObject{
      * @param {Component} component The component to add to the game object.
      * @returns this game object (makes this a fluent interface)
      */
-    addComponent(component){
+    addComponent(component) {
         this.components.push(component);
         component.parent = this;
         return this;
@@ -57,13 +67,18 @@ class GameObject{
      * @param {string} name The name to search for.
      * @returns The first game object with that name. Undefined otherwise.
      */
-    static getObjectByName(name){
-        return SceneManager.getActiveScene().gameObjects.find(gameObject=>gameObject.name == name)
+    static getObjectByName(name) {
+        return SceneManager.getActiveScene().gameObjects.find(gameObject => gameObject.name == name)
     }
 
-
-    static getObjectsByName(name){
-        return SceneManager.getActiveScene().gameObjects.filter(gameObject=>gameObject.name == name)
+/**
+     * Search the game objects in the active scene for any
+     * with a given name.
+     * @param {string} name The name to search for.
+     * @returns All game objects with that name. An empty array otherwise.
+     */
+    static getObjectsByName(name) {
+        return SceneManager.getActiveScene().gameObjects.filter(gameObject => gameObject.name == name)
     }
 
     /**
@@ -74,7 +89,7 @@ class GameObject{
      * @param {string} name See getObjectByName
      * @returns See getObjectByName
      */
-    static find(name){
+    static find(name) {
         return GameObject.getObjectByName(name);
     }
 
@@ -84,20 +99,43 @@ class GameObject{
      * 
      * Note that the Unity API takes a type as a generic argument. Since JS lacks this 
      * functionality, we use the name instead.
-     * @param {string} name 
+     * @param {string} name The name of the component to look for.
      * @returns The first game objecte with the name. Undefined if no
      * component is found.
      */
-    getComponent(name){
-        return this.components.find(c=>c.name == name)
+    getComponent(name) {
+        return this.components.find(c => c.name == name)
     }
 
-    static handleMessage(component,messsage){
-        GameObject.messsages.push({component, message})
+    /**
+     * Set the markedForDestroy flag on the game object
+     * The game object will be removed during the next 
+     * destroy pass in the game loop.
+     */
+    destroy(){
+        this.markedForDestroy = true;
     }
 
+    doNotDestroyOnLoad(){
+        this.markedDoNotDestroyOnLoad = true
+    }
+
+    /**
+     * Add a new game object to the current scene. 
+     * Note that gameObject should be a reference created with new, 
+     * not an existing game object.
+     * 
+     * The game object is added to the scene, and if the game object
+     * has a start function, start is called.
+     * @param {GameObject} gameObject The game object to instantiate
+     */
+    static instantiate(gameObject) {
+        SceneManager.getActiveScene().gameObjects.push(gameObject);
+        if (gameObject.start && !gameObject.started) {
+            gameObject.started = true
+            gameObject.start()
+        }
+    }
 }
-
-
 
 window.GameObject = GameObject;
