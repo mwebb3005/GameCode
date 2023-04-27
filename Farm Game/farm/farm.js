@@ -130,6 +130,7 @@ class MainCameraComponent extends Component{
 
 class MainController extends Component {
     start(ctx) {
+        
         let playerGameObject = new GameObject("PlayerGameObject")
             let playerComponent = new PlayerComponent();
             playerComponent.addListener(this)
@@ -139,7 +140,7 @@ class MainController extends Component {
             GameObject.instantiate(playerGameObject)
         
 
-        for (let i = 0; i < 1; i++) {
+        for (let i = 0; i < 5; i++) {
             let rabbitGameObject = new GameObject("RabbitGameObject")
             let rabbitComponent = new RabbitComponent();
             rabbitComponent.addListener(this)
@@ -160,15 +161,13 @@ class MainController extends Component {
         // }
 
         
-
-
         let boxGameObject = new GameObject("BoxGameObject")
             let boxComponent = new BoxComponent();
             boxComponent.addListener(this)
             boxComponent.addListener(GameObject.getObjectByName("PlayerGameObject").getComponent("PlayerComponent"))
             boxComponent.addListener(GameObject.getObjectByName("CoinCounterGameObject").getComponent("CoinCounterComponent"))
             boxGameObject.addComponent(boxComponent)
-            GameObject.instantiate(playerGameObject)
+            GameObject.instantiate(boxGameObject)
     }
     
 }
@@ -295,12 +294,10 @@ class PlayerComponent extends Component {
         
     // }
     handleMessage(message) {
-        if (message.message = "ApplePicked") {
+        if (message.message == "ApplePicked") {
             this.handsFull = true
         }
-    }
-    handleMessage(message) {
-        if (message.message = "AppleDeposit") {
+        if (message.message == "AppleDeposit") {
             this.handsFull = false
         }
     }
@@ -339,8 +336,8 @@ class PlayerComponent extends Component {
 class AppleComponent extends Component {
     name = "AppleComponent"
     start(ctx) {
-        this.transform.x = ctx.canvas.width/ (Math.random() * 10)
-        this.transform.y = ctx.canvas.height/ (Math.random() * 10)
+        this.transform.x = -1500 + (3000 / (Math.random() * 10))
+        this.transform.y = -600 + (1000 / (Math.random() * 10))
         this.touched = false
     }
     update(ctx) {
@@ -353,8 +350,10 @@ class AppleComponent extends Component {
         let playerWidth = playerComponent.playerWidth
         let playerHeight = playerComponent.playerHeight
 
-        if (((playerX - playerWidth >= this.transform.x) && (playerX + playerWidth <= this.transform.x)) 
-            && ((playerY - playerHeight >= this.transform.y) && (playerY + playerHeight <= this.transform.y))) {
+        if (((playerX >= this.transform.x - playerWidth ) && (playerX  <= this.transform.x + playerWidth)) 
+            && ((playerY  >= this.transform.y - playerHeight) && (playerY  <= this.transform.y + playerHeight))) {
+            this.touched = true
+            console.log("Player on Apple")
             this.updateListeners("ApplePicked")
             this.parent.destroy()
         }
@@ -546,10 +545,12 @@ class BoxComponent extends Component {
         let playerComponent = playerGameObject.getComponent("PlayerComponent")
         let playerX = playerComponent.transform.x;
         let playerY = playerComponent.transform.y;
+        let playerHeight = playerComponent.playerHeight
+        let playerWidth = playerComponent.playerWidth
         let handsFull = playerComponent.handsFull
 
-        if ((playerY >= 700) &&
-            ((playerX >= -600) && playerX <= (550))) {
+        if ((playerY + playerHeight >= 700) &&
+            ((playerX + playerWidth >= -600) && playerX <= (550))) {
             console.log("At Box")
             if (handsFull) { 
                 this.updateListeners("AppleDeposit")
