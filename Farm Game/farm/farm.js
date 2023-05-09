@@ -136,6 +136,7 @@ class MainCameraComponent extends Component{
 }
 
 class MainController extends Component {
+    name = "MainControllerComponent"
     maxTime = 1;
     timeSinceLastApple = this.maxTime
 
@@ -201,6 +202,12 @@ class MainController extends Component {
             let appleComponent = toAdd.getComponent("AppleComponent")
             appleComponent.addListener(this)
     }
+    addRabbit(){
+        let toAdd = new GameObject("RabbitGameObject")
+            GameObject.instantiate(toAdd)
+            let rabbitComponent = toAdd.getComponent("RabbitComponent")
+            rabbitComponent.addListener(this)
+    }
     update() {
         if(this.timeSinceLastApple >= this.maxTime){
           this.addApple;
@@ -209,19 +216,26 @@ class MainController extends Component {
         this.timeSinceLastApple += Time.deltaTime;
     }
     handleMessage(message){
-        if (message.message == "ApplePicked"){
-            let toAdd = new GameObject("AppleGameObject")
-            GameObject.instantiate(toAdd)
-            let appleComponent = toAdd.getComponent("AppleComponent")
-            appleComponent.addListener(this)
+        this.updateListeners(message)
+        if (message.message== "ApplePicked"){
+            this.addApple
+        }
+        if (message.message == "BunnyOutOfBounds"){
+            this.addRabbit
+        }
+        if (message.message == "AppleDeposit"){
+            Inventory.coins = Inventory.coins + Inventory.eco
         }
     }
+    
     
 }
 
 class TimerComponent extends Component {
     name = "TimerComponent"
     start(ctx) {
+        this.mainControllerComponent = GameObject.getObjectByName("MainControllerGameObject").getComponent("MainControllerComponent");
+        this.mainControllerComponent.addListener(this)
         this.time = 0
         this.timer = 100
         this.transform.x = -1470
@@ -257,6 +271,8 @@ class TimerComponent extends Component {
 class PlayerComponent extends Component {
     name = "PlayerComponent"
     start(ctx) {
+        this.mainControllerComponent = GameObject.getObjectByName("MainControllerGameObject").getComponent("MainControllerComponent");
+        this.mainControllerComponent.addListener(this)
         this.width = ctx.canvas.width
         this.height = ctx.canvas.height
         this.rightFace = true;
@@ -344,7 +360,7 @@ class PlayerComponent extends Component {
     //     }
         
     // }
-    handleMessage(message) {
+    handleMessage(message) {     //Also tried: handleUpdate(this, message) but gave error
         if (message.message == "ApplePicked") {
             this.handsFull = true
         }
@@ -393,20 +409,22 @@ class PlayerComponent extends Component {
 class AppleComponent extends Component {
     name = "AppleComponent"
     start(ctx) {
+        this.mainControllerComponent = GameObject.getObjectByName("MainControllerGameObject").getComponent("MainControllerComponent");
+        this.mainControllerComponent.addListener(this)
         this.transform.x = -1500 + (3000 / (Math.random() * 10))
-        this.transform.y = -600 + (1000 / (Math.random() * 10))
+        this.transform.y = -500 + (1000 / (Math.random() * 10))
         this.touched = false
     }
     update(ctx) {
         //Mark to destroy if touched 
         //Pseudocode, need to decide on logic for touched 
-        let playerGameObject = GameObject.getObjectByName("PlayerGameObject")
-        let playerComponent = playerGameObject.getComponent("PlayerComponent")
-        let playerX = playerComponent.transform.x;
-        let playerY = playerComponent.transform.y;
-        let playerWidth = playerComponent.playerWidth
-        let playerHeight = playerComponent.playerHeight
-        let playerHands = playerComponent.handsFull
+        this.playerGameObject = GameObject.getObjectByName("PlayerGameObject")
+        this.playerComponent = this.playerGameObject.getComponent("PlayerComponent")
+        let playerX = this.playerComponent.transform.x;
+        let playerY = this.playerComponent.transform.y;
+        let playerWidth = this.playerComponent.playerWidth
+        let playerHeight = this.playerComponent.playerHeight
+        let playerHands = this.playerComponent.handsFull
 
         if (((playerX >= this.transform.x - playerWidth ) && (playerX  <= this.transform.x + playerWidth)) 
             && ((playerY  >= this.transform.y - playerHeight) && (playerY  <= this.transform.y + playerHeight))
@@ -442,12 +460,14 @@ class AppleComponent extends Component {
 class RabbitComponent extends Component {
     name = "RabbitComponent"
     start(ctx) {
+        this.mainControllerComponent = GameObject.getObjectByName("MainControllerGameObject").getComponent("MainControllerComponent");
+        this.mainControllerComponent.addListener(this)
         this.movementTimer = 0
         this.bunnyVX = 0
         this.bunnyVY = 0
         this.moveRabbit = true
-        this.transform.x = 500
-        this.transform.y = 500
+        this.transform.x = 500//-1200 + (2700 / (Math.random() * 10))
+        this.transform.y = 500//-600 + (1000 / (Math.random() * 10))
         this.xV = -1
         this.xY = -1
         this.newDirection = -1 + Math.floor((Math.random()))
@@ -468,16 +488,16 @@ class RabbitComponent extends Component {
             }
         }
 
-        let playerGameObject = GameObject.getObjectByName("PlayerGameObject")
-        let playerComponent = playerGameObject.getComponent("PlayerComponent")
-        let playerX = playerComponent.transform.x;
-        let playerY = playerComponent.transform.y;
-        let scareDistance = playerComponent.scareDistance;
+        this.playerGameObject = GameObject.getObjectByName("PlayerGameObject")
+        this.playerComponent = this.playerGameObject.getComponent("PlayerComponent")
+        let playerX = this.playerComponent.transform.x;
+        let playerY = this.playerComponent.transform.y;
+        let scareDistance = this.playerComponent.scareDistance;
 
-        let appleGameObject = GameObject.getObjectByName("AppleGameObject")
-        let appleComponent = appleGameObject.getComponent("AppleComponent")
-        let appleX = appleComponent.transform.x;
-        let appleY = appleComponent.transform.y;
+        this.appleGameObject = GameObject.getObjectByName("AppleGameObject")
+        this.appleComponent = this.appleGameObject.getComponent("AppleComponent")
+        let appleX = this.appleComponent.transform.x;
+        let appleY = this.appleComponent.transform.y;
 
         if ((this.transform.x >= appleX - 50 && this.transform.x <= appleX + 50) && 
             (this.transform.y >= appleY - 50 && this.transform.y <= appleY + 50)){
@@ -498,14 +518,16 @@ class RabbitComponent extends Component {
         // }
 
 
-        if ((this.transform.x >= playerX - scareDistance && this.transform.x <= playerX + scareDistance)){
+        if ((this.transform.x >= playerX - scareDistance && this.transform.x <= playerX + scareDistance)
+            && (this.transform.y >= playerY - scareDistance && this.transform.y <= playerY + scareDistance)){
             // this.xV *= -1
-            this.transform.x += -(this.transform.x / this.transform.x) * 3
+            //this.transform.x += -(this.transform.x / this.transform.x) 
+            this.transform.y += -(this.transform.y / this.transform.y) 
         }
-        if ((this.transform.y >= playerY - scareDistance && this.transform.y <= playerY + scareDistance)){
-            // this.xV *= -1
-            this.transform.y += -(this.transform.y / this.transform.y) * 3
-        }
+        // if ((this.transform.y >= playerY - scareDistance && this.transform.y <= playerY + scareDistance)){
+        //     // this.xV *= -1
+        //     this.transform.y += -(this.transform.y / this.transform.y) * 3
+        // }
 
         
         if (this.transform.y >= playerY - scareDistance && this.transform.y <= playerY + scareDistance){
@@ -556,20 +578,25 @@ class RabbitComponent extends Component {
 
         //Keep bunny within boundaries of map
         if (this.transform.x < -1500) {
-            this.parent.destroy()
             this.updateListeners("BunnyOutOfBounds")
+            this.parent.destroy()
+            console.log("BunnyOOB")
+            
         }
-        if (this.transform.y < -100) {
-            this.parent.destroy()
+        if (this.transform.y < -300) {
             this.updateListeners("BunnyOutOfBounds")
+            this.parent.destroy()
+            console.log("BunnyOOB")
         }
         if (this.transform.x > 1500) {
-            this.parent.destroy()
             this.updateListeners("BunnyOutOfBounds")
-        }
-        if (this.transform.y > 1000) {
             this.parent.destroy()
+            console.log("BunnyOOB")
+        }
+        if (this.transform.y > 900) {
             this.updateListeners("BunnyOutOfBounds") 
+            this.parent.destroy()
+            console.log("BunnyOOB")
         }
         
 
@@ -597,16 +624,17 @@ class RabbitComponent extends Component {
 class BoxComponent extends Component {
     name = "BoxComponent"
     start(ctx) {
-
+        this.mainControllerComponent = GameObject.getObjectByName("MainControllerGameObject").getComponent("MainControllerComponent");
+        this.mainControllerComponent.addListener(this)
     }
     update(ctx) {
-        let playerGameObject = GameObject.getObjectByName("PlayerGameObject")
-        let playerComponent = playerGameObject.getComponent("PlayerComponent")
-        let playerX = playerComponent.transform.x;
-        let playerY = playerComponent.transform.y;
-        let playerHeight = playerComponent.playerHeight
-        let playerWidth = playerComponent.playerWidth
-        let handsFull = playerComponent.handsFull
+        this.playerGameObject = GameObject.getObjectByName("PlayerGameObject")
+        this.playerComponent = this.playerGameObject.getComponent("PlayerComponent")
+        let playerX = this.playerComponent.transform.x;
+        let playerY = this.playerComponent.transform.y;
+        let playerHeight = this.playerComponent.playerHeight
+        let playerWidth = this.playerComponent.playerWidth
+        let handsFull = this.playerComponent.handsFull
 
         if ((playerY + playerHeight >= 700) &&
             ((playerX + playerWidth >= -600) && playerX <= (550))) {
@@ -633,20 +661,22 @@ class BoxComponent extends Component {
 
 
 class CoinCounterComponent extends Component {
-    name = "CoinCounterComponent"
+    MainControllerComponent = "CoinCounterComponent"
     start(ctx) {
+        this.mainControllerComponent = GameObject.getObjectByName("MainControllerGameObject").getComponent("MainControllerComponent");
+        this.mainControllerComponent.addListener(this)
         this.coins = Inventory.coins
         this.economy = Inventory.eco
     }
     update(ctx) {
-
+        
     }
     handleMessage(message) {
         if (message.message == "AppleDeposit") {
-            this.coins = this.coins + this.economy
+            Inventory.coins = Inventory.coins + Inventory.eco
         }
         if (message.message == "UpgradeEconomy"){
-            this.economy = this.economy + 1
+            Inventory.eco = Inventory.economy + 1
         }
     }
     draw(ctx) {
@@ -669,7 +699,7 @@ class CoinCounterComponent extends Component {
         //Coin Count
         ctx.fillStyle = "white";
         ctx.font = "70px arial"
-        ctx.fillText(this.coins, 1480, -745);
+        ctx.fillText(Inventory.coins, 1480, -745);
     }
 }
 
