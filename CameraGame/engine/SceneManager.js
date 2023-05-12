@@ -104,5 +104,4 @@ class SceneManager {
     }
 }
 
-//Add SceneManager to the global window object.
 window.SceneManager = SceneManager;

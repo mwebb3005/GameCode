@@ -1,8 +1,22 @@
 import "../engine/engine.js"
+import "../engine/Rabbit.js"
+import "../engine/Apple.js"
+import "../engine/Player.js"
+import "../engine/Box.js"
+import "../engine/Coin.js"
+import "../engine/Arrow.js"
 import Time from "../engine/Time.js"
 
+class Inventory{
+    static coins = 0;
+    static speed = 15;
+    static intim = 200;
+    static eco = 1;
+}
 
-class StartController extends Component {
+
+class StartControllerComponent extends Component {
+    name = "StartControllerComponent"
     start(ctx) {
         this.freezeTime = 0
         this.maxFreezeTime = 1
@@ -31,16 +45,16 @@ class StartController extends Component {
     }
     draw(ctx) {
 
-        ctx.fillStyle = "rgb(30,200,25)"
-        ctx.fillRect(-1500, -700, 3200, 3000)
-        ctx.fillStyle = `rgb(${this.time / 2},${this.time + 40},${this.time + 70})`
-        ctx.fillRect(-1500, -900, 3200, 300)
-        ctx.fillStyle = "white";
-        ctx.font = "100px arial"
-        ctx.fillText("Untitled Farm Game", -500, 0);
-        ctx.fillStyle = `rgba(255, 255, 255, ${this.time % 120 - 20})`
-        ctx.font = "100px arial"
-        ctx.fillText("Press Space to Start", -500, 300);
+        // ctx.fillStyle = "rgb(30,200,25)"
+        // ctx.fillRect(-1500, -700, 3200, 3000)
+        // ctx.fillStyle = `rgb(${this.time / 2},${this.time + 40},${this.time + 70})`
+        // ctx.fillRect(-1500, -900, 3200, 300)
+        // ctx.fillStyle = "white";
+        // ctx.font = "100px arial"
+        // ctx.fillText("Untitled Farm Game", -500, 0);
+        // ctx.fillStyle = `rgba(255, 255, 255, ${this.time % 120 - 20})`
+        // ctx.font = "100px arial"
+        // ctx.fillText("Press Space to Start", -500, 300);
 
     }
 }
@@ -51,18 +65,21 @@ class StartController extends Component {
 
 class StartDrawComponent extends Component {
     draw(ctx) {
-        /*
+        this.startControllerGameObject = GameObject.getObjectByName("StartControllerGameObject")
+        this.startControllerComponent = this.startControllerGameObject.getComponent("StartControllerComponent")
+        this.time = this.startControllerComponent.time;
+
         ctx.fillStyle = "rgb(30,200,25)"
-        ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height)
-        ctx.fillStyle = `rgb(${StartController.time / 2},${StartController.time + 40},${StartController.time + 70})`
-        ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height / 8)
+        ctx.fillRect(-1500, -700, 3200, 3000)
+        ctx.fillStyle = `rgb(${this.time / 2},${this.time + 40},${this.time + 70})`
+        ctx.fillRect(-1500, -900, 3200, 300)
         ctx.fillStyle = "white";
-        ctx.font = "50px arial"
-        ctx.fillText("Untitled Farm Game", ctx.canvas.width / 3, ctx.canvas.height / 2);
-        ctx.fillStyle = `rgba(255, 255, 255, ${StartController.time % 40 - 10})`
-        ctx.font = "50px arial"
-        ctx.fillText("Press Space to Start", ctx.canvas.width / 3, 3 * (ctx.canvas.height / 4));
-        */
+        ctx.font = "100px arial"
+        ctx.fillText("Untitled Farm Game", -500, 0);
+        ctx.fillStyle = `rgba(255, 255, 255, ${this.time % 120 - 20})`
+        ctx.font = "100px arial"
+        ctx.fillText("Press Space to Start", -500, 300);
+        
     }
 }
 
@@ -92,20 +109,29 @@ class StartDrawGameObject extends GameObject {
 
 class StartScene extends Scene {
     start() {
-        this.addGameObject(new StartControllerGameObject())
+        let startControllerGameObject = new GameObject("StartControllerGameObject")
+            let startControllerComponent = new StartControllerComponent();
+            startControllerComponent.addListener(this)
+            // appleComponent.addListener(GameObject.getObjectByName("PlayerGameObject").getComponent("PlayerComponent"))
+            // appleComponent.addListener(GameObject.getObjectByName("RabbitGameObject").getComponent("RabbitComponent"))
+            startControllerGameObject.addComponent(startControllerComponent)
+            let background = new StartDrawComponent()
+            startControllerGameObject.addComponent(background)
+            GameObject.instantiate(startControllerGameObject)
         this.addGameObject(new StartDrawGameObject())
+
         Camera.main.parent.addComponent(new StartCameraComponent());
     }
 }
 
 //---------------------------------------------------------------------------
 
-class Inventory{
-    static coins = 0;
-    static speed = 15;
-    static intim = 200;
-    static eco = 1;
-}
+// class Inventory{
+//     static coins = 0;
+//     static speed = 15;
+//     static intim = 200;
+//     static eco = 1;
+// }
 
 class MainScene extends Scene {
     start(ctx) {
@@ -142,23 +168,15 @@ class MainController extends Component {
 
     start(ctx) {
         
-        
-        
-        let playerGameObject = new GameObject("PlayerGameObject")
-            let playerComponent = new PlayerComponent();
-            playerComponent.addListener(this)
-            // playerComponent.addListener(GameObject.getObjectByName("AppleGameObject").getComponent("AppleComponent"))
-            // playerComponent.addListener(GameObject.getObjectByName("BoxGameObject").getComponent("BoxComponent"))
-            playerGameObject.addComponent(playerComponent)
-            GameObject.instantiate(playerGameObject)
-        
-
         for (let i = 0; i < 5; i++) {
             let rabbitGameObject = new GameObject("RabbitGameObject")
             let rabbitComponent = new RabbitComponent();
             rabbitComponent.addListener(this)
             // rabbitComponent.addListener(GameObject.getObjectByName("AppleGameObject").getComponent("AppleComponent"))
             rabbitGameObject.addComponent(rabbitComponent)
+
+            let rabbit = new Rabbit()
+            rabbitGameObject.addComponent(rabbit)
             GameObject.instantiate(rabbitGameObject)
             
         }
@@ -169,6 +187,8 @@ class MainController extends Component {
             // appleComponent.addListener(GameObject.getObjectByName("PlayerGameObject").getComponent("PlayerComponent"))
             // appleComponent.addListener(GameObject.getObjectByName("RabbitGameObject").getComponent("RabbitComponent"))
             appleGameObject.addComponent(appleComponent)
+            let apple = new Apple()
+            appleGameObject.addComponent(apple)
             GameObject.instantiate(appleGameObject)
             
         }
@@ -181,6 +201,8 @@ class MainController extends Component {
             // boxComponent.addListener(GameObject.getObjectByName("PlayerGameObject").getComponent("PlayerComponent"))
             // boxComponent.addListener(GameObject.getObjectByName("CoinCounterGameObject").getComponent("CoinCounterComponent"))
             boxGameObject.addComponent(boxComponent)
+            let box = new Box()
+            boxGameObject.addComponent(box)
             GameObject.instantiate(boxGameObject)
 
         let coinCounterGameObject = new GameObject("CoinCounterGameObject")
@@ -189,25 +211,40 @@ class MainController extends Component {
             // boxComponent.addListener(GameObject.getObjectByName("PlayerGameObject").getComponent("PlayerComponent"))
             // boxComponent.addListener(GameObject.getObjectByName("CoinCounterGameObject").getComponent("CoinCounterComponent"))
             coinCounterGameObject.addComponent(coinCounterComponent)
+            let coin = new Coin()
+            coinCounterGameObject.addComponent(coin)
             GameObject.instantiate(coinCounterGameObject)
+
+            let playerGameObject = new GameObject("PlayerGameObject")
+            let playerComponent = new PlayerComponent();
+            playerComponent.addListener(this)
+            // playerComponent.addListener(GameObject.getObjectByName("AppleGameObject").getComponent("AppleComponent"))
+            // playerComponent.addListener(GameObject.getObjectByName("BoxGameObject").getComponent("BoxComponent"))
+            playerGameObject.addComponent(playerComponent)
+            let player = new Player()
+            playerGameObject.addComponent(player)
+            GameObject.instantiate(playerGameObject)
 
         GameObject.getObjectByName("PlayerGameObject").doNotDestroyOnLoad()
         GameObject.getObjectByName("CoinCounterGameObject").doNotDestroyOnLoad()
 
         
     }
-    addApple(){
-        let toAdd = new GameObject("AppleGameObject")
-            GameObject.instantiate(toAdd)
-            let appleComponent = toAdd.getComponent("AppleComponent")
-            appleComponent.addListener(this)
-    }
-    addRabbit(){
-        let toAdd = new GameObject("RabbitGameObject")
-            GameObject.instantiate(toAdd)
-            let rabbitComponent = toAdd.getComponent("RabbitComponent")
-            rabbitComponent.addListener(this)
-    }
+    // addApple(){
+    //     let appleGameObject = new GameObject("AppleGameObject")
+    //         let appleComponent = new AppleComponent();
+    //         appleComponent.addListener(this)
+    //         // appleComponent.addListener(GameObject.getObjectByName("PlayerGameObject").getComponent("PlayerComponent"))
+    //         // appleComponent.addListener(GameObject.getObjectByName("RabbitGameObject").getComponent("RabbitComponent"))
+    //         appleGameObject.addComponent(appleComponent)
+    //         GameObject.instantiate(appleGameObject)
+    // }
+    // addRabbit(){
+    //     let toAdd = new GameObject("RabbitGameObject")
+    //         GameObject.instantiate(toAdd)
+    //         let rabbitComponent = toAdd.getComponent("RabbitComponent")
+    //         rabbitComponent.addListener(this)
+    // }
     update() {
         if(this.timeSinceLastApple >= this.maxTime){
           this.addApple;
@@ -215,15 +252,31 @@ class MainController extends Component {
         }
         this.timeSinceLastApple += Time.deltaTime;
     }
-    handleMessage(message){
-        this.updateListeners(message)
-        if (message.message== "ApplePicked"){
-            this.addApple
+    handleUpdate(component, eventName){
+        this.updateListeners(eventName)
+        if (eventName== "ApplePicked"){
+            var appleGameObject = new GameObject("AppleGameObject")
+            var appleComponent = new AppleComponent();
+            appleComponent.addListener(this)
+            // appleComponent.addListener(GameObject.getObjectByName("PlayerGameObject").getComponent("PlayerComponent"))
+            // appleComponent.addListener(GameObject.getObjectByName("RabbitGameObject").getComponent("RabbitComponent"))
+            appleGameObject.addComponent(appleComponent)
+            let apple = new Apple()
+            appleGameObject.addComponent(apple)
+            GameObject.instantiate(appleGameObject)
         }
-        if (message.message == "BunnyOutOfBounds"){
-            this.addRabbit
+        if (eventName == "BunnyOutOfBounds"){
+            
+                var rabbitGameObject = new GameObject("RabbitGameObject")
+                var rabbitComponent = new RabbitComponent();
+                rabbitComponent.addListener(this)
+                // rabbitComponent.addListener(GameObject.getObjectByName("AppleGameObject").getComponent("AppleComponent"))
+                rabbitGameObject.addComponent(rabbitComponent)
+                let rabbit = new Rabbit()
+                rabbitGameObject.addComponent(rabbit)
+                GameObject.instantiate(rabbitGameObject)
         }
-        if (message.message == "AppleDeposit"){
+        if (eventName == "AppleDeposit"){
             Inventory.coins = Inventory.coins + Inventory.eco
         }
     }
@@ -280,6 +333,8 @@ class PlayerComponent extends Component {
         this.playerHeight = 150
         this.transform.x = 0//((ctx.canvas.width)) / 2
         this.transform.y = 0//(ctx.canvas.height) / 2
+        this.xV = 0
+        this.vY = 0
         this.time = 0
         this.timer = 100
         this.speed = Inventory.speed
@@ -309,17 +364,21 @@ class PlayerComponent extends Component {
         else{
         if (keysDown["ArrowLeft"]) {
             this.transform.x -= this.speed * Time.deltaTime * 20
+            this.vX = -1
             this.rightFace = false
         }
         else if (keysDown["ArrowRight"]) {
             this.transform.x += this.speed * Time.deltaTime * 20
+            this.vX = 1
             this.rightFace = true
         }
         if (keysDown["ArrowUp"]) {
             this.transform.y -= this.speed * Time.deltaTime * 20
+            this.vY = -1
         }
         else if (keysDown["ArrowDown"]) {
             this.transform.y += this.speed * Time.deltaTime * 20
+            this.vY = 1
         }
 
         //Constrain the player position to screen
@@ -360,49 +419,49 @@ class PlayerComponent extends Component {
     //     }
         
     // }
-    handleMessage(message) {     //Also tried: handleUpdate(this, message) but gave error
-        if (message.message == "ApplePicked") {
+    handleUpdate(component, eventName) {     //Also tried: handleUpdate(this, message) but gave error
+        if (eventName == "ApplePicked") {
             this.handsFull = true
         }
-        if (message.message == "AppleDeposit") {
+        if (eventName == "AppleDeposit") {
             this.handsFull = false
         }
-        if(message.message == "UpgradeSpeed"){
+        if(eventName == "UpgradeSpeed"){
             this.speed = this.speed + 2
         }
-        if(message.message == "UpgradeIntimidation"){
+        if(eventName == "UpgradeIntimidation"){
             this.speed = this.scareDistance + 20
         }
     }
 
     draw(ctx) {
-        //Body
-        ctx.beginPath();
-        ctx.rect(this.transform.x, this.transform.y, this.playerWidth, this.playerHeight);
-        ctx.fillStyle = "rgb(255, 245, 190)";
-        if (this.rightFace) {
-            ctx.rect(this.transform.x, this.transform.y + 25, 90, 15);
-        }
-        else {
-            ctx.rect(this.transform.x, this.transform.y + 25, -15, 15);
-        }
-        ctx.fill();
-        ctx.closePath();
-        //Hat
-        ctx.beginPath();
-        ctx.rect( this.transform.x - 5, this.transform.y, 90, 20);
-        ctx.fillStyle = "rgb(138, 115, 10)";
-        ctx.rect(this.transform.x + 5, this.transform.y, 70, -20);
-        ctx.fill();
-        ctx.closePath();
-        //Apple
-        if (this.handsFull) {
-            ctx.beginPath();
-            ctx.arc(this.transform.x + (this.playerWidth/2), this.transform.y + (this.playerHeight/2), 10, 0, 2 * Math.PI)
-            ctx.fillStyle = "rgb(255, 40, 10)";
-            ctx.fill();
-            ctx.closePath();
-        }
+        // //Body
+        // ctx.beginPath();
+        // ctx.rect(this.transform.x, this.transform.y, this.playerWidth, this.playerHeight);
+        // ctx.fillStyle = "rgb(255, 245, 190)";
+        // if (this.rightFace) {
+        //     ctx.rect(this.transform.x, this.transform.y + 25, 90, 15);
+        // }
+        // else {
+        //     ctx.rect(this.transform.x, this.transform.y + 25, -15, 15);
+        // }
+        // ctx.fill();
+        // ctx.closePath();
+        // //Hat
+        // ctx.beginPath();
+        // ctx.rect( this.transform.x - 5, this.transform.y, 90, 20);
+        // ctx.fillStyle = "rgb(138, 115, 10)";
+        // ctx.rect(this.transform.x + 5, this.transform.y, 70, -20);
+        // ctx.fill();
+        // ctx.closePath();
+        // //Apple
+        // if (this.handsFull) {
+        //     ctx.beginPath();
+        //     ctx.arc(this.transform.x + (this.playerWidth/2), this.transform.y + (this.playerHeight/2), 10, 0, 2 * Math.PI)
+        //     ctx.fillStyle = "rgb(255, 40, 10)";
+        //     ctx.fill();
+        //     ctx.closePath();
+        // }
     }
 }
 
@@ -412,7 +471,7 @@ class AppleComponent extends Component {
         this.mainControllerComponent = GameObject.getObjectByName("MainControllerGameObject").getComponent("MainControllerComponent");
         this.mainControllerComponent.addListener(this)
         this.transform.x = -1500 + (3000 / (Math.random() * 10))
-        this.transform.y = -500 + (1000 / (Math.random() * 10))
+        this.transform.y = -500 + (500 / (Math.random() * 10))
         this.touched = false
     }
     update(ctx) {
@@ -443,55 +502,64 @@ class AppleComponent extends Component {
         //let playerComponent = GameObject.getObjectByName("PlayerGameObject").getComponent("PlayerComponent")
 
     }
+    handleUpdate(component, eventName) {
+        if (eventName == "AppleEaten") {
+            //this.parent.destroy()
+            console.log("Should be eaten but breaks game")
+        }
+    }
     draw(ctx) {
-        ctx.beginPath();
-        ctx.arc(this.transform.x, this.transform.y, 50, 0, 2 * Math.PI)
-        ctx.fillStyle = "rgb(255, 40, 10)";
-        ctx.fill();
-        ctx.closePath();
-        ctx.beginPath();
-        ctx.rect(this.transform.x - 5, this.transform.y - 60, 10, 30)
-        ctx.fillStyle = "black";
-        ctx.fill();
-        ctx.closePath();
+        // ctx.beginPath();
+        // ctx.arc(this.transform.x, this.transform.y, 50, 0, 2 * Math.PI)
+        // ctx.fillStyle = "rgb(255, 40, 10)";
+        // ctx.fill();
+        // ctx.closePath();
+        // ctx.beginPath();
+        // ctx.rect(this.transform.x - 5, this.transform.y - 60, 10, 30)
+        // ctx.fillStyle = "black";
+        // ctx.fill();
+        // ctx.closePath();
     }
 }
 
 class RabbitComponent extends Component {
     name = "RabbitComponent"
     start(ctx) {
-        this.mainControllerComponent = GameObject.getObjectByName("MainControllerGameObject").getComponent("MainControllerComponent");
-        this.mainControllerComponent.addListener(this)
+        let mainControllerComponent = GameObject.getObjectByName("MainControllerGameObject").getComponent("MainControllerComponent");
+        mainControllerComponent.addListener(this)
         this.movementTimer = 0
-        this.bunnyVX = 0
-        this.bunnyVY = 0
+        this.bunnyVX = 10
+        this.bunnyVY = 10
         this.moveRabbit = true
-        this.transform.x = 500//-1200 + (2700 / (Math.random() * 10))
-        this.transform.y = 500//-600 + (1000 / (Math.random() * 10))
+        this.transform.x = -1200 + (2700 / (Math.random() * 10))
+        this.transform.y = -600 + (1000 / (Math.random() * 10))
         this.xV = -1
         this.xY = -1
         this.newDirection = -1 + Math.floor((Math.random()))
+        
     }
     update(ctx) {
         //Pseudo Logic: Random movement every 100 time, if in certain range of Apple Array, move towards apple
         
 
-        if (this.moveRabbit) {
-            this.movementTimer = 10
-            if (this.movementTimer > 1)
-                this.moveRabbit = false
-        }
-        else {
-            this.movementTimer--
-            if (this.movementTimer == 0) {
-                this.moveRabbit = true
-            }
-        }
+        // if (this.moveRabbit) {
+        //     this.movementTimer = 50
+        //     if (this.movementTimer > 1)
+        //         this.moveRabbit = false
+        // }
+        // else {
+        //     this.movementTimer--
+        //     if (this.movementTimer == 0) {
+        //         this.moveRabbit = true
+        //     }
+        // }
 
         this.playerGameObject = GameObject.getObjectByName("PlayerGameObject")
         this.playerComponent = this.playerGameObject.getComponent("PlayerComponent")
         let playerX = this.playerComponent.transform.x;
         let playerY = this.playerComponent.transform.y;
+        let playerVX = this.playerComponent.vX
+        let playerVY = this.playerComponent.vY
         let scareDistance = this.playerComponent.scareDistance;
 
         this.appleGameObject = GameObject.getObjectByName("AppleGameObject")
@@ -499,13 +567,7 @@ class RabbitComponent extends Component {
         let appleX = this.appleComponent.transform.x;
         let appleY = this.appleComponent.transform.y;
 
-        if ((this.transform.x >= appleX - 50 && this.transform.x <= appleX + 50) && 
-            (this.transform.y >= appleY - 50 && this.transform.y <= appleY + 50)){
-        //     this.transform.x = 100
-            // This will probably work to center it 
-            this.transform.x += (appleX / 20)
-            this.transform.y += (appleX / 20)
-        }
+        
         // if ((this.transform.y >= appleY - 50 && this.transform.y <= appleY + 50)){
         // //     this.transform.x = 100
         //     // This will probably work to center it 
@@ -521,49 +583,57 @@ class RabbitComponent extends Component {
         if ((this.transform.x >= playerX - scareDistance && this.transform.x <= playerX + scareDistance)
             && (this.transform.y >= playerY - scareDistance && this.transform.y <= playerY + scareDistance)){
             // this.xV *= -1
-            //this.transform.x += -(this.transform.x / this.transform.x) 
-            this.transform.y += -(this.transform.y / this.transform.y) 
+            this.transform.x += playerVX * Time.deltaTime * 800
+            this.transform.y += playerVY * Time.deltaTime * 800
         }
         // if ((this.transform.y >= playerY - scareDistance && this.transform.y <= playerY + scareDistance)){
         //     // this.xV *= -1
         //     this.transform.y += -(this.transform.y / this.transform.y) * 3
         // }
 
-        
-        if (this.transform.y >= playerY - scareDistance && this.transform.y <= playerY + scareDistance){
-            this.yV *= -1
-            this.transform.y += this.yV 
+        else if ((this.transform.x >= appleX - 100 && this.transform.x <= appleX + 100) && 
+            (this.transform.y >= appleY - 100 && this.transform.y <= appleY + 100)){
+        //     this.transform.x = 100
+            // This will probably work to center it 
+            this.transform.x += (appleX / 20)
+            this.transform.y += (appleY / 20)
+            this.updateListeners("AppleEaten")
         }
+
+        // if (this.transform.y >= playerY - scareDistance && this.transform.y <= playerY + scareDistance){
+        //     this.yV *= -1
+        //     this.transform.y += this.yV 
+        // }
         else if (this.moveRabbit) {
             this.newDirection = (-1 * (Math.random()))+ (Math.random())
 
-            if (this.newDirection < -.6) {
-                this.transform.x += -30
-                this.transform.y += -30
-            }
-            else if (this.newDirection < -.4) {
-                this.transform.x += 0
-                this.transform.y += -30
+            if (this.newDirection < -.4) {
+                this.transform.x += -this.bunnyVX * Time.deltaTime * 20
+                this.transform.y += -this.bunnyVX * Time.deltaTime * 20
             }
             else if (this.newDirection < -.2) {
-                this.transform.x += -30
-                this.transform.y += 0
+                this.transform.x += 0
+                this.transform.y += -this.bunnyVX * Time.deltaTime * 20
             }
             else if (this.newDirection < 0) {
-                this.transform.x += -30
-                this.transform.y += 30
-            }
-            else if (this.newDirection < .2) {
-                this.transform.x += 30
+                this.transform.x += -this.bunnyVX * Time.deltaTime * 20
                 this.transform.y += 0
             }
+            else if (this.newDirection < .2) {
+                this.transform.x += -this.bunnyVX * Time.deltaTime * 20
+                this.transform.y += this.bunnyVX * Time.deltaTime * 20
+            }
             else if (this.newDirection < .4) {
-                this.transform.x += 0
-                this.transform.y += 30
+                this.transform.x += this.bunnyVX * Time.deltaTime * 20
+                this.transform.y += 0
             }
             else if (this.newDirection < .6) {
-                this.transform.x += 30
-                this.transform.y += 30
+                this.transform.x += 0
+                this.transform.y += this.bunnyVX * Time.deltaTime * 20
+            }
+            else if (this.newDirection < 1) {
+                this.transform.x += this.bunnyVX * Time.deltaTime * 20
+                this.transform.y += this.bunnyVX * Time.deltaTime * 20
             }
             
         }
@@ -583,7 +653,7 @@ class RabbitComponent extends Component {
             console.log("BunnyOOB")
             
         }
-        if (this.transform.y < -300) {
+        if (this.transform.y < -700) {
             this.updateListeners("BunnyOutOfBounds")
             this.parent.destroy()
             console.log("BunnyOOB")
@@ -593,7 +663,7 @@ class RabbitComponent extends Component {
             this.parent.destroy()
             console.log("BunnyOOB")
         }
-        if (this.transform.y > 900) {
+        if (this.transform.y > 700) {
             this.updateListeners("BunnyOutOfBounds") 
             this.parent.destroy()
             console.log("BunnyOOB")
@@ -603,21 +673,21 @@ class RabbitComponent extends Component {
 
     }
     draw(ctx) {
-        ctx.beginPath();
-        ctx.rect(this.transform.x, this.transform.y, 100, 50);
-        ctx.fillStyle = "rgb(255, 255, 255)";
-        ctx.fill();
-        ctx.closePath();
-        ctx.beginPath();
-        ctx.rect(this.transform.x + 15, -20 + this.transform.y, 20, 40)
-        ctx.fillStyle = "white ";
-        ctx.fill();
-        ctx.closePath();
-        ctx.beginPath();
-        ctx.arc(this.transform.x, this.transform.y, 10, 0, 2 * Math.PI)
-        ctx.fillStyle = "pink ";
-        ctx.fill();
-        ctx.closePath();
+        // ctx.beginPath();
+        // ctx.rect(this.transform.x, this.transform.y, 100, 50);
+        // ctx.fillStyle = "rgb(255, 255, 255)";
+        // ctx.fill();
+        // ctx.closePath();
+        // ctx.beginPath();
+        // ctx.rect(this.transform.x + 15, -20 + this.transform.y, 20, 40)
+        // ctx.fillStyle = "white ";
+        // ctx.fill();
+        // ctx.closePath();
+        // ctx.beginPath();
+        // ctx.arc(this.transform.x, this.transform.y, 10, 0, 2 * Math.PI)
+        // ctx.fillStyle = "pink ";
+        // ctx.fill();
+        // ctx.closePath();
     }
 }
 
@@ -646,79 +716,93 @@ class BoxComponent extends Component {
         }
     }
     draw(ctx) {
-        ctx.beginPath();
-        ctx.rect(-600, 700, 1150, 300);
-        ctx.fillStyle = "rgb(115, 80, 0)";
-        ctx.fill();
-        ctx.closePath();
-        ctx.beginPath();
-        ctx.rect(-570, 720, 1100, 55);
-        ctx.fillStyle = "black";
-        ctx.fill();
-        ctx.closePath();
+        // ctx.beginPath();
+        // ctx.rect(-600, 700, 1150, 300);
+        // ctx.fillStyle = "rgb(115, 80, 0)";
+        // ctx.fill();
+        // ctx.closePath();
+        // ctx.beginPath();
+        // ctx.rect(-570, 720, 1100, 55);
+        // ctx.fillStyle = "black";
+        // ctx.fill();
+        // ctx.closePath();
     }
 }
 
 
 class CoinCounterComponent extends Component {
-    MainControllerComponent = "CoinCounterComponent"
-    start(ctx) {
-        this.mainControllerComponent = GameObject.getObjectByName("MainControllerGameObject").getComponent("MainControllerComponent");
-        this.mainControllerComponent.addListener(this)
-        this.coins = Inventory.coins
-        this.economy = Inventory.eco
-    }
-    update(ctx) {
+    name = "CoinCounterComponent"
+    // start(ctx) {
+    //     this.mainControllerComponent = GameObject.getObjectByName("MainControllerGameObject").getComponent("MainControllerComponent");
+    //     this.mainControllerComponent.addListener(this)
+    //     this.coins = Inventory.coins
+    //     this.economy = Inventory.eco
+    // }
+    // update(ctx) {
         
-    }
-    handleMessage(message) {
-        if (message.message == "AppleDeposit") {
-            Inventory.coins = Inventory.coins + Inventory.eco
-        }
-        if (message.message == "UpgradeEconomy"){
-            Inventory.eco = Inventory.economy + 1
-        }
-    }
+    // }
+    // handleUpdate(component, eventName) {
+    //     if (eventName == "AppleDeposit") {
+    //         Inventory.coins = Inventory.coins + Inventory.eco
+    //     }
+    //     if (eventName == "UpgradeEconomy"){
+    //         Inventory.eco = Inventory.economy + 1
+    //     }
+    // }
     draw(ctx) {
-        //Coin Icon
-        ctx.beginPath();
-        ctx.arc(1420, -770, 50, 0, 2 * Math.PI)
-        ctx.fillStyle = "rgb(190, 170, 30)";
-        ctx.fill();
-        ctx.closePath();
-        ctx.beginPath();
-        ctx.arc(1420, -770, 45, 0, 2 * Math.PI)
-        ctx.fillStyle = "rgb(255, 240, 30)";
-        ctx.fill();
-        ctx.closePath();
-        ctx.beginPath();
-        ctx.fillStyle = "rgb(176, 165, 50)";
-        ctx.font = "70px arial"
-        ctx.fillText("C", 1395, -745);
-        ctx.closePath();
-        //Coin Count
         ctx.fillStyle = "white";
         ctx.font = "70px arial"
-        ctx.fillText(Inventory.coins, 1480, -745);
+        ctx.fillText(Inventory.coins, 1475, -745);
     }
 }
 
 //End Scene----------------------------------------------------------------------------
+class EndScene extends Scene {
+    start() {
+        this.addGameObject(new GameObject("EndControllerGameObject").addComponent(new EndController()))
+        this.addGameObject(new GameObject("EndDrawGameObject").addComponent(new EndDrawComponent()))
+        this.addGameObject(new GameObject("ArrowGameObject").addComponent(new ArrowComponent()))
+        this.addGameObject(new GameObject("EndTextGameObject").addComponent(new EndTextComponent()))
+        this.addGameObject(new GameObject("EndCoinCounterGameObject").addComponent(new EndCoinCounterComponent()))
+        //this.addGameObject("CoinCounterGameObject")
+    }
+}
+
 class EndController extends Component {
     start(ctx){
         let arrowGameObject = new GameObject("ArrowGameObject")
             let arrowComponent = new ArrowComponent();
             arrowComponent.addListener(this)
-            arrowComponent.addListener(GameObject.getObjectByName("PlayerGameObject").getComponent("PlayerComponent"))
-            arrowComponent.addListener(GameObject.getObjectByName("CoinCounterGameObject").getComponent("CoinCounterComponent"))
+            // arrowComponent.addListener(GameObject.getObjectByName("PlayerGameObject").getComponent("PlayerComponent"))
+            // arrowComponent.addListener(GameObject.getObjectByName("CoinCounterGameObject").getComponent("CoinCounterComponent"))
             arrowGameObject.addComponent(arrowComponent)
+            let arrow = new Arrow()
+            arrowGameObject.addComponent(arrow)
             GameObject.instantiate(arrowGameObject)
+
+            // let endCoinCounterGameObject = new GameObject("EndCoinCounterGameObject")
+            // let endCoinCounterComponent = new EndCoinCounterComponent();
+            // endCoinCounterComponent.addListener(this)
+            // // arrowComponent.addListener(GameObject.getObjectByName("PlayerGameObject").getComponent("PlayerComponent"))
+            // // arrowComponent.addListener(GameObject.getObjectByName("CoinCounterGameObject").getComponent("CoinCounterComponent"))
+            // endCoinCounterGameObject.addComponent(arrowComponent)
+            // let coin = new Coin()
+            // endCoinCounterGameObject.addComponent(coin)
+            // GameObject.instantiate(endCoinCounterGameObject)
 
 
             //For store and upgrading, create a static class that keeps track of upgrades, coins, etc. 
     }
 }
 
+class EndCoinCounterComponent extends Component {
+    name = "EndCoinCounterComponent"
+    draw(ctx) {
+        ctx.fillStyle = "white";
+        ctx.font = "70px arial"
+        ctx.fillText(Inventory.coins, 1400, -745);
+    }
+}
 
 class EndDrawComponent extends Component {
     draw(ctx) {
@@ -848,9 +932,6 @@ class EndTextComponent extends Component {
         this.wOffset = ctx.canvas.width / 5 + ctx.canvas.width / 24
         this.hOffset = ctx.canvas.height / 12
     }
-    update() {
-
-    }
     draw(ctx) {
         //Text
         ctx.fillStyle = "white";
@@ -875,15 +956,7 @@ class EndTextComponent extends Component {
     }
 }
 
-class EndScene extends Scene {
-    start() {
-        this.addGameObject(new GameObject("EndControllerGameObject").addComponent(new EndController()))
-        this.addGameObject(new GameObject("EndDrawGameObject").addComponent(new EndDrawComponent()))
-        this.addGameObject(new GameObject("ArrowGameObject").addComponent(new ArrowComponent()))
-        this.addGameObject(new GameObject("EndTextGameObject").addComponent(new EndTextComponent()))
-        //this.addGameObject("CoinCounterGameObject")
-    }
-}
+
 
 
 
